@@ -17,6 +17,8 @@ object Pl extends Lang {
 
   override def label: String = "🇵🇱 Polski"
 
+  override def globalLang: String = "pl"
+
   override protected def withPages(message: String, page: Int, pages: Int): String = {
     if (pages > 1) s"$message. Strona <b>${page + 1}</b> z <b>$pages</b>"
     else message

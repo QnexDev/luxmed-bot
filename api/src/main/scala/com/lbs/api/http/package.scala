@@ -13,7 +13,7 @@ import scala.util.{Failure, Success, Try}
 
 package object http extends StrictLogging {
 
-  case class Session(accessToken: String, tokenType: String, cookies: Seq[HttpCookie])
+  case class Session(accessToken: String, tokenType: String, cookies: Seq[HttpCookie], globalLang: String = "en")
 
   object headers {
     val `Content-Type` = "Content-Type"
@@ -104,6 +104,10 @@ package object http extends StrictLogging {
       val lowerCaseKey = key.toLowerCase
       SensitiveHeaders.exists(h => lowerCaseKey.contains(h))
     }
+  }
+
+  def joinCookies(cookies: Seq[HttpCookie]*): Seq[HttpCookie] = {
+    cookies.map(_.map(v => v.getName -> v).toMap).reduce(_ ++ _).values.toSeq
   }
 
 }

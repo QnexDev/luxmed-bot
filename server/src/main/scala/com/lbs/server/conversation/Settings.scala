@@ -8,10 +8,16 @@ import com.lbs.server.conversation.Settings._
 import com.lbs.server.conversation.base.Conversation
 import com.lbs.server.lang.{Lang, Localizable, Localization}
 import com.lbs.server.repository.model
-import com.lbs.server.service.DataService
+import com.lbs.server.service.{ApiService, DataService}
 import com.lbs.server.util.MessageExtractors.{CallbackCommand, IntString, TextCommand}
 
-class Settings(val userId: UserId, bot: Bot, dataService: DataService, val localization: Localization)(
+class Settings(
+  val userId: UserId,
+  bot: Bot,
+  apiService: ApiService,
+  dataService: DataService,
+  val localization: Localization
+)(
   val actorSystem: ActorSystem
 ) extends Conversation[Unit]
     with Localizable {
@@ -41,7 +47,9 @@ class Settings(val userId: UserId, bot: Bot, dataService: DataService, val local
         inlineKeyboard = createInlineKeyboard(Lang.Langs.map(l => Button(l.label, l.id)), columns = 1)
       )
     } onReply { case Msg(CallbackCommand(IntString(langId)), _) =>
-      localization.updateLanguage(userId.userId, Lang(langId))
+      val lang = Lang(langId)
+      localization.updateLanguage(userId.userId, lang)
+      apiService.updateGlobalLang(userId.accountId, lang.globalLang)
       bot.sendMessage(userId.source, lang.languageUpdated)
       end()
     }

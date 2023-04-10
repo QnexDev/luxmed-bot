@@ -31,6 +31,8 @@ trait Lang {
 
   def label: String
 
+  def globalLang: String = "en"
+
   protected def capitalize(str: String): String = {
     if (str != null && str != "") {
       val fistCapitalLetter = str.head.toTitleCase

@@ -44,7 +44,7 @@ class Account(val userId: UserId, bot: Bot, dataService: DataService, val locali
     }
 
   private def switchAccount(accountId: Long): Unit = {
-    val accountMaybe = dataService.findUserCredentialsByAccountId(userId.userId, accountId)
+    val accountMaybe = dataService.getCredentials(accountId)
     accountMaybe match {
       case Some(account) =>
         val userMaybe = dataService.findUser(userId.userId)

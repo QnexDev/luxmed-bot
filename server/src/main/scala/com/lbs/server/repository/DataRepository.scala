@@ -278,26 +278,11 @@ class DataRepository(@Autowired em: EntityManager) {
       .toSeq
   }
 
-  def getUsernameByUserIdAndAccountId(userId: Long, accountId: Long): Option[String] = {
+  def getUsernameByAccountId(accountId: Long): Option[String] = {
     em.createQuery(
-      """select credentials.username from Credentials credentials where credentials.userId = :userId
-        | and credentials.accountId = :accountId""".stripMargin,
+      "select credentials.username from Credentials credentials where credentials.accountId = :accountId",
       classOf[String]
-    ).setParameter("userId", userId)
-      .setParameter("accountId", accountId)
-      .getResultList
-      .asScala
-      .headOption
-  }
-
-  def findUserCredentialsByUserIdAndAccountId(userId: Long, accountId: Long): Option[Credentials] = {
-    em.createQuery(
-      """select credentials from Credentials credentials where credentials.userId = :userId
-        | and credentials.accountId = :accountId
-      """.stripMargin,
-      classOf[Credentials]
-    ).setParameter("userId", userId)
-      .setParameter("accountId", accountId)
+    ).setParameter("accountId", accountId)
       .getResultList
       .asScala
       .headOption

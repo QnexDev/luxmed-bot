@@ -67,4 +67,11 @@ trait SessionSupport extends StrictLogging {
     lock.obtainLock(accountId).synchronized {
       sessions.put(accountId, session)
     }
+
+  def updateGlobalLang(accountId: Long, globalLang: String): Unit =
+    lock.obtainLock(accountId).synchronized {
+      sessions.get(accountId).foreach { session =>
+        sessions.put(accountId, session.copy(globalLang = globalLang))
+      }
+    }
 }

@@ -2,7 +2,7 @@ package com.lbs.server.service
 
 import cats.instances.either._
 import com.lbs.api.LuxmedApi
-import com.lbs.api.http.Session
+import com.lbs.api.http.{Session, joinCookies}
 import com.lbs.api.json.model._
 import com.lbs.server.ThrowableOr
 import com.lbs.server.util.DateTimeUtil
@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import scalaj.http.HttpResponse
 
-import java.net.HttpCookie
 import java.time.{LocalDateTime, LocalTime}
 
 @Service
@@ -26,10 +25,7 @@ class ApiService extends SessionSupport {
 
   def getAllVisitLanguages(accountId: Long): ThrowableOr[List[VisitLanguage]] =
     withSession(accountId) { session =>
-      luxmedApi.dictionaryVisitLanguages(
-        // GlobalLang=en cookie is required to get all languages, not only polish
-        session.copy(cookies = joinCookies(session.cookies, Seq(new HttpCookie("GlobalLang", "en"))
-      )))
+      luxmedApi.dictionaryVisitLanguages(session)
     }
 
   def getAllCities(accountId: Long): ThrowableOr[List[DictionaryCity]] =
@@ -150,17 +146,13 @@ class ApiService extends SessionSupport {
       luxmedApi.reservationDelete(session, reservationId)
     }
 
-  private def joinCookies(cookies: Seq[HttpCookie]*): Seq[HttpCookie] = {
-    cookies.map(_.map(v => v.getName -> v).toMap).reduce(_ ++ _).values.toSeq
-  }
-
   override def fullLogin(username: String, encryptedPassword: String): ThrowableOr[Session] = {
     val password = textEncryptor.decrypt(encryptedPassword)
     for {
       r1 <- luxmedApi.login(username, password)
       tmpSession = Session(r1.body.accessToken, r1.body.accessToken, r1.cookies)
       r2 <- luxmedApi.loginToApp(tmpSession)
-      cookies = joinCookies(r1.cookies, r2.cookies, Seq(new HttpCookie("GlobalLang", "pl")))
+      cookies = joinCookies(r1.cookies, r2.cookies)
       accessToken = r1.body.accessToken
       tokenType = r1.body.tokenType
     } yield Session(accessToken, tokenType, cookies)

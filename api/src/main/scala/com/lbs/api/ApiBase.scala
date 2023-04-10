@@ -1,6 +1,6 @@
 package com.lbs.api
 
-import com.lbs.api.http.Session
+import com.lbs.api.http.{Session, joinCookies}
 import com.lbs.api.http.headers._
 import scalaj.http.{BaseHttp, HttpRequest}
 
@@ -30,9 +30,10 @@ trait ApiBase {
   }
 
   protected def http(url: String, session: Session): HttpRequest = {
+    val newCookies = joinCookies(session.cookies, Seq(new HttpCookie("GlobalLang", session.globalLang)))
     ApiHttp(s"https://portalpacjenta.luxmed.pl/PatientPortalMobileAPI/api/$url")
       .headers(CommonHeaders)
-      .cookies(session.cookies)
+      .cookies(newCookies)
       .header(Authorization, s"${session.tokenType} ${session.accessToken}")
   }
 
@@ -40,7 +41,8 @@ trait ApiBase {
     val req = ApiHttp(s"https://portalpacjenta.luxmed.pl/PatientPortal/$url")
       .headers(CommonHeaders)
       .header(Authorization, session.accessToken)
-    cookiesMaybe.map(cookies => req.cookies(cookies)).getOrElse(req.cookies(session.cookies))
+    val newCookies = joinCookies(session.cookies, Seq(new HttpCookie("GlobalLang", session.globalLang)))
+    cookiesMaybe.map(cookies => req.cookies(cookies)).getOrElse(req.cookies(newCookies))
   }
 
   protected def httpNewApi(url: String, cookies: IndexedSeq[HttpCookie]): HttpRequest = {

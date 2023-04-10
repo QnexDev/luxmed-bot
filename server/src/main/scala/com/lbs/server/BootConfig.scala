@@ -112,7 +112,7 @@ class BootConfig {
 
   @Bean
   def settingsFactory: UserIdTo[Settings] =
-    userId => new Settings(userId, bot, dataService, localization)(actorSystem)
+    userId => new Settings(userId, bot, apiService, dataService, localization)(actorSystem)
 
   @Bean
   def accountFactory: UserIdTo[Account] =
